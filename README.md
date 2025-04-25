@@ -29,6 +29,7 @@ A REST API service that enriches person data with age, gender, and nationality f
 - Go
 - PostgreSQL
 - Make
+- Docker
 
 ### Installation
 
