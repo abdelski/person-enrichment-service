@@ -34,6 +34,6 @@ A REST API service that enriches person data with age, gender, and nationality f
 ### Installation
 
 1. Clone the repository
-3. Run migrations:
+3. Run make target to start all the services:
    ```bash
    make docker-run
