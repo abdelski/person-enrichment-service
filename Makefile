@@ -18,4 +18,4 @@ docker-build:
 	docker build -t person-enrichment .
 
 docker-run:
-	docker-compose down -v & docker-compose up --build
+	 swag init -g cmd/main.go --output docs/ && docker-compose down -v && docker-compose up --build
