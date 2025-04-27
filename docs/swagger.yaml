@@ -1,6 +1,6 @@
 basePath: /api/v1
 definitions:
-  person-enrichment-service_server_entity.CreatePersonRequest:
+  entity.CreatePersonRequest:
     properties:
       name:
         type: string
@@ -10,7 +10,7 @@ definitions:
     - name
     - surname
     type: object
-  person-enrichment-service_server_entity.PersonResponse:
+  entity.PersonResponse:
     properties:
       age:
         type: integer
@@ -29,7 +29,7 @@ definitions:
       updated_at:
         type: string
     type: object
-  person-enrichment-service_server_entity.UpdatePersonRequest:
+  entity.UpdatePersonRequest:
     properties:
       age:
         type: integer
@@ -62,10 +62,6 @@ paths:
       - description: Surname filter
         in: query
         name: surname
-        type: string
-      - description: Patronymic filter
-        in: query
-        name: patronymic
         type: string
       - description: Age filter
         in: query
@@ -122,14 +118,14 @@ paths:
         name: person
         required: true
         schema:
-          $ref: '#/definitions/person-enrichment-service_server_entity.CreatePersonRequest'
+          $ref: '#/definitions/entity.CreatePersonRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/person-enrichment-service_server_entity.PersonResponse'
+            $ref: '#/definitions/entity.PersonResponse'
         "400":
           description: Bad Request
           schema:
@@ -198,7 +194,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/person-enrichment-service_server_entity.PersonResponse'
+            $ref: '#/definitions/entity.PersonResponse'
         "400":
           description: Bad Request
           schema:
@@ -235,14 +231,14 @@ paths:
         name: person
         required: true
         schema:
-          $ref: '#/definitions/person-enrichment-service_server_entity.UpdatePersonRequest'
+          $ref: '#/definitions/entity.UpdatePersonRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/person-enrichment-service_server_entity.PersonResponse'
+            $ref: '#/definitions/entity.PersonResponse'
         "400":
           description: Bad Request
           schema:

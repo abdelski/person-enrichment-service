@@ -42,12 +42,6 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "Patronymic filter",
-                        "name": "patronymic",
-                        "in": "query"
-                    },
-                    {
                         "type": "integer",
                         "description": "Age filter",
                         "name": "age",
@@ -127,7 +121,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/person-enrichment-service_server_entity.CreatePersonRequest"
+                            "$ref": "#/definitions/entity.CreatePersonRequest"
                         }
                     }
                 ],
@@ -135,7 +129,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/person-enrichment-service_server_entity.PersonResponse"
+                            "$ref": "#/definitions/entity.PersonResponse"
                         }
                     },
                     "400": {
@@ -185,7 +179,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/person-enrichment-service_server_entity.PersonResponse"
+                            "$ref": "#/definitions/entity.PersonResponse"
                         }
                     },
                     "400": {
@@ -243,7 +237,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/person-enrichment-service_server_entity.UpdatePersonRequest"
+                            "$ref": "#/definitions/entity.UpdatePersonRequest"
                         }
                     }
                 ],
@@ -251,7 +245,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/person-enrichment-service_server_entity.PersonResponse"
+                            "$ref": "#/definitions/entity.PersonResponse"
                         }
                     },
                     "400": {
@@ -340,7 +334,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "person-enrichment-service_server_entity.CreatePersonRequest": {
+        "entity.CreatePersonRequest": {
             "type": "object",
             "required": [
                 "name",
@@ -355,7 +349,7 @@ const docTemplate = `{
                 }
             }
         },
-        "person-enrichment-service_server_entity.PersonResponse": {
+        "entity.PersonResponse": {
             "type": "object",
             "properties": {
                 "age": {
@@ -384,7 +378,7 @@ const docTemplate = `{
                 }
             }
         },
-        "person-enrichment-service_server_entity.UpdatePersonRequest": {
+        "entity.UpdatePersonRequest": {
             "type": "object",
             "properties": {
                 "age": {

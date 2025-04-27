@@ -1,6 +1,7 @@
 package swag_handler
 
 import (
+	"log/slog"
 	"net/http"
 	"person-enrichment-service/server/entity"
 	"person-enrichment-service/server/service"
@@ -11,11 +12,13 @@ import (
 
 type PersonHandler struct {
 	service service.PersonService
+	logger  *slog.Logger
 }
 
-func NewPersonHandler(service service.PersonService) *PersonHandler {
+func NewPersonHandler(service service.PersonService, logger *slog.Logger) *PersonHandler {
 	return &PersonHandler{
 		service: service,
+		logger:  logger,
 	}
 }
 
@@ -33,12 +36,14 @@ func NewPersonHandler(service service.PersonService) *PersonHandler {
 func (h *PersonHandler) CreatePerson(c *gin.Context) {
 	var req entity.CreatePersonRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		h.logger.Error("Failed to bind JSON", "error", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	person, err := h.service.CreatePerson(c.Request.Context(), &req)
 	if err != nil {
+		h.logger.Error("Failed to create person", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -61,17 +66,20 @@ func (h *PersonHandler) CreatePerson(c *gin.Context) {
 func (h *PersonHandler) GetPerson(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
+		h.logger.Error("Failed to parse ID", "error", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
 	person, err := h.service.GetPersonByID(c.Request.Context(), uint(id))
 	if err != nil {
+		h.logger.Error("Failed to get person", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	if person == nil {
+		h.logger.Info("Person not found", "id", id)
 		c.JSON(http.StatusNotFound, gin.H{"error": "Person not found"})
 		return
 	}
@@ -87,7 +95,6 @@ func (h *PersonHandler) GetPerson(c *gin.Context) {
 // @Produce  json
 // @Param name query string false "Name filter"
 // @Param surname query string false "Surname filter"
-// @Param patronymic query string false "Patronymic filter"
 // @Param age query int false "Age filter"
 // @Param gender query string false "Gender filter"
 // @Param nationality query string false "Nationality filter"
@@ -114,6 +121,7 @@ func (h *PersonHandler) GetPeople(c *gin.Context) {
 
 	people, total, err := h.service.GetAllPersons(c.Request.Context(), filter)
 	if err != nil {
+		h.logger.Error("Failed to get people", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -142,18 +150,21 @@ func (h *PersonHandler) GetPeople(c *gin.Context) {
 func (h *PersonHandler) UpdatePerson(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
+		h.logger.Error("Failed to parse ID", "error", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
 	var req entity.UpdatePersonRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		h.logger.Error("Failed to bind JSON", "error", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	person, err := h.service.UpdatePerson(c.Request.Context(), uint(id), &req)
 	if err != nil {
+		h.logger.Error("Failed to update person", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -176,11 +187,13 @@ func (h *PersonHandler) UpdatePerson(c *gin.Context) {
 func (h *PersonHandler) DeletePerson(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
+		h.logger.Error("Failed to parse ID", "error", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
 	if err := h.service.DeletePerson(c.Request.Context(), uint(id)); err != nil {
+		h.logger.Error("Failed to delete person", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

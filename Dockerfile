@@ -11,7 +11,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o ./bin/person-enrichment ./cmd/main.go
 
 FROM alpine:latest
 
-RUN apk update && apk add --no-cache postgresql15-client
+# RUN apk update && apk add --no-cache postgresql15-client
 
 WORKDIR /app
 

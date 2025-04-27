@@ -5,22 +5,25 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"person-enrichment-service/server/entity"
 	"strings"
 )
 
 type EnrichmentServiceImpl struct {
-	agifyURL      string
-	genderizeURL  string
+	agifyURL       string
+	genderizeURL   string
 	nationalizeURL string
+	logger         *slog.Logger
 }
 
-func NewEnrichmentService(agifyURL, genderizeURL, nationalizeURL string) EnrichmentService {
+func NewEnrichmentService(agifyURL, genderizeURL, nationalizeURL string, logger *slog.Logger) EnrichmentService {
 	return &EnrichmentServiceImpl{
-		agifyURL:      agifyURL,
-		genderizeURL:  genderizeURL,
+		agifyURL:       agifyURL,
+		genderizeURL:   genderizeURL,
 		nationalizeURL: nationalizeURL,
+		logger:         logger,
 	}
 }
 
@@ -29,21 +32,21 @@ func (s *EnrichmentServiceImpl) EnrichPersonData(ctx context.Context, name strin
 
 	age, err := s.getAge(ctx, name)
 	if err != nil {
-		fmt.Println("Failed to get age", err)
+		s.logger.Error("Failed to get age", "error", err)
 	} else {
 		person.Age = age
 	}
 
 	gender, err := s.getGender(ctx, name)
 	if err != nil {
-		fmt.Println("Failed to get gender", err)
+		s.logger.Error("Failed to get gender", "error", err)
 	} else {
 		person.Gender = gender
 	}
 
 	nationality, err := s.getNationality(ctx, name)
 	if err != nil {
-		fmt.Println("Failed to get naitonlaity", err)
+		s.logger.Error("Failed to get nationality", "error", err)
 	} else {
 		person.Nationality = nationality
 	}
@@ -55,12 +58,14 @@ func (s *EnrichmentServiceImpl) getAge(ctx context.Context, name string) (int, e
 	url := fmt.Sprintf("%s/?name=%s", s.agifyURL, name)
 	resp, err := http.Get(url)
 	if err != nil {
+		s.logger.Error("Failed to get age", "error", err)
 		return 0, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		s.logger.Error("Failed to read response body", "error", err)
 		return 0, err
 	}
 
@@ -68,6 +73,7 @@ func (s *EnrichmentServiceImpl) getAge(ctx context.Context, name string) (int, e
 		Age int `json:"age"`
 	}
 	if err := json.Unmarshal(body, &result); err != nil {
+		s.logger.Error("Failed to unmarshal response", "error", err)
 		return 0, err
 	}
 
@@ -78,12 +84,14 @@ func (s *EnrichmentServiceImpl) getGender(ctx context.Context, name string) (str
 	url := fmt.Sprintf("%s/?name=%s", s.genderizeURL, name)
 	resp, err := http.Get(url)
 	if err != nil {
+		s.logger.Error("Failed to get gender", "error", err)
 		return "", err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		s.logger.Error("Failed to read response body", "error", err)
 		return "", err
 	}
 
@@ -91,6 +99,7 @@ func (s *EnrichmentServiceImpl) getGender(ctx context.Context, name string) (str
 		Gender string `json:"gender"`
 	}
 	if err := json.Unmarshal(body, &result); err != nil {
+		s.logger.Error("Failed to unmarshal response", "error", err)
 		return "", err
 	}
 
@@ -101,14 +110,17 @@ func (s *EnrichmentServiceImpl) getNationality(ctx context.Context, name string)
 	url := fmt.Sprintf("%s/?name=%s", s.nationalizeURL, name)
 	resp, err := http.Get(url)
 	if err != nil {
+		s.logger.Error("Failed to get naitionality", "error", err)
 		return "", err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		s.logger.Error("Failed to read response body", "error", err)
 		return "", err
 	}
+	// s.logger.Debug("Abdel Response body", "body", string(body))
 
 	var result struct {
 		Country []struct {
@@ -117,6 +129,7 @@ func (s *EnrichmentServiceImpl) getNationality(ctx context.Context, name string)
 		} `json:"country"`
 	}
 	if err := json.Unmarshal(body, &result); err != nil {
+		s.logger.Error("Failed to unmarshal response", "error", err)
 		return "", err
 	}
 

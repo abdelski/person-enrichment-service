@@ -36,12 +36,6 @@
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "Patronymic filter",
-                        "name": "patronymic",
-                        "in": "query"
-                    },
-                    {
                         "type": "integer",
                         "description": "Age filter",
                         "name": "age",
@@ -121,7 +115,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/person-enrichment-service_server_entity.CreatePersonRequest"
+                            "$ref": "#/definitions/entity.CreatePersonRequest"
                         }
                     }
                 ],
@@ -129,7 +123,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/person-enrichment-service_server_entity.PersonResponse"
+                            "$ref": "#/definitions/entity.PersonResponse"
                         }
                     },
                     "400": {
@@ -179,7 +173,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/person-enrichment-service_server_entity.PersonResponse"
+                            "$ref": "#/definitions/entity.PersonResponse"
                         }
                     },
                     "400": {
@@ -237,7 +231,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/person-enrichment-service_server_entity.UpdatePersonRequest"
+                            "$ref": "#/definitions/entity.UpdatePersonRequest"
                         }
                     }
                 ],
@@ -245,7 +239,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/person-enrichment-service_server_entity.PersonResponse"
+                            "$ref": "#/definitions/entity.PersonResponse"
                         }
                     },
                     "400": {
@@ -334,7 +328,7 @@
         }
     },
     "definitions": {
-        "person-enrichment-service_server_entity.CreatePersonRequest": {
+        "entity.CreatePersonRequest": {
             "type": "object",
             "required": [
                 "name",
@@ -349,7 +343,7 @@
                 }
             }
         },
-        "person-enrichment-service_server_entity.PersonResponse": {
+        "entity.PersonResponse": {
             "type": "object",
             "properties": {
                 "age": {
@@ -378,7 +372,7 @@
                 }
             }
         },
-        "person-enrichment-service_server_entity.UpdatePersonRequest": {
+        "entity.UpdatePersonRequest": {
             "type": "object",
             "properties": {
                 "age": {

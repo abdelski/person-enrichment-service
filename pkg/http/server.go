@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"person-enrichment-service/server/config"
 	"person-enrichment-service/server/repository"
@@ -16,7 +17,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	// see this issue https://github.com/swaggo/swag/issues/830#issuecomment-725587162
-	// without importing this swagger files will not picked up by swag 
+	// without importing this swagger files will not picked up by swag
 	_ "person-enrichment-service/docs"
 
 	"gorm.io/driver/postgres"
@@ -28,10 +29,13 @@ type Server struct {
 	config *config.Config
 }
 
-func NewServer(cfg *config.Config) (*Server, error) {
+func NewServer(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	// dsn := buildDSN(cfg)
+
+	logger.Info("Connecting to database", "host", cfg.DBHost, "port", cfg.DBPort, "user", cfg.DBUser, "name", cfg.DBName)
 	db, err := connectDB(cfg)
 	if err != nil {
+		logger.Error("Failed to connect to database", "error", err)
 		return nil, err
 	}
 
@@ -41,13 +45,13 @@ func NewServer(cfg *config.Config) (*Server, error) {
 		cfg.AgifyURL,
 		cfg.GenderizeURL,
 		cfg.NationalizeURL,
+		logger,
 	)
-	personSvc := service.NewPersonService(personRepo, enrichmentSvc)
+	personSvc := service.NewPersonService(personRepo, enrichmentSvc, logger)
 
-	personHandler := swag_handler.NewPersonHandler(personSvc)
+	personHandler := swag_handler.NewPersonHandler(personSvc, logger)
 
 	router := gin.Default()
-
 
 	api := router.Group("/api/v1")
 	{
@@ -59,7 +63,6 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	}
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
 
 	// there were problems with the db connection, that is why I added this
 	router.GET("/health", func(c *gin.Context) {
@@ -104,36 +107,36 @@ func (s *Server) Start() error {
 }
 
 func buildDSN(cfg *config.Config) string {
-    return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=UTC",
-        cfg.DBHost,
-        cfg.DBUser,
-        cfg.DBPassword,
-        cfg.DBName,
-        cfg.DBPort,
-        cfg.DBSSLMode,
-    )
+	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=UTC",
+		cfg.DBHost,
+		cfg.DBUser,
+		cfg.DBPassword,
+		cfg.DBName,
+		cfg.DBPort,
+		cfg.DBSSLMode,
+	)
 }
 
-
 func connectDB(cfg *config.Config) (*gorm.DB, error) {
-    dsn := buildDSN(cfg)
-    
-    sqlDB, err := sql.Open("pgx", dsn)
-    if err != nil {
-        return nil, fmt.Errorf("raw connection failed: %w", err)
-    }
-    
-    ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-    defer cancel()
-    
-    err = sqlDB.PingContext(ctx)
-    if err != nil {
-        return nil, fmt.Errorf("ping failed: %w", err)
-    }
+	dsn := buildDSN(cfg)
 
-    db, err := gorm.Open(postgres.New(postgres.Config{
-        Conn: sqlDB,
-    }), &gorm.Config{})
-    
-    return db, err
+	sqlDB, err := sql.Open("pgx", dsn)
+	if err != nil {
+		return nil, fmt.Errorf("raw connection failed: %w", err)
+	}
+
+	// so I had some issues connection to the database so I added this to check if connection is ok
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+
+	err = sqlDB.PingContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("ping failed: %w", err)
+	}
+
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		Conn: sqlDB,
+	}), &gorm.Config{})
+
+	return db, err
 }

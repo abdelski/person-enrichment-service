@@ -2,31 +2,34 @@ package service
 
 import (
 	"context"
+	"log/slog"
 	"person-enrichment-service/server/entity"
 	"person-enrichment-service/server/repository"
 )
 
-
 type PersonServiceImpl struct {
-	repo           repository.PersonRepository
-	enrichmentSvc  EnrichmentService
+	repo          repository.PersonRepository
+	enrichmentSvc EnrichmentService
+	logger        *slog.Logger
 }
 
-func NewPersonService(repo repository.PersonRepository, enrichmentSvc EnrichmentService) PersonService {
+func NewPersonService(repo repository.PersonRepository, enrichmentSvc EnrichmentService, logger *slog.Logger) PersonService {
 	return &PersonServiceImpl{
 		repo:          repo,
 		enrichmentSvc: enrichmentSvc,
+		logger:        logger,
 	}
 }
 
 func (s *PersonServiceImpl) CreatePerson(ctx context.Context, req *entity.CreatePersonRequest) (*entity.PersonResponse, error) {
 	person := &entity.Person{
-		Name:       req.Name,
-		Surname:    req.Surname,
+		Name:    req.Name,
+		Surname: req.Surname,
 	}
 
 	enrichedPerson, err := s.enrichmentSvc.EnrichPersonData(ctx, req.Name)
 	if err != nil {
+		s.logger.Error("Failed to enrich person data", "error", err)
 		return nil, err
 	} else {
 		person.Age = enrichedPerson.Age
@@ -35,6 +38,7 @@ func (s *PersonServiceImpl) CreatePerson(ctx context.Context, req *entity.Create
 	}
 
 	if err := s.repo.Create(person); err != nil {
+		s.logger.Error("Failed to create person", "error", err)
 		return nil, err
 	}
 
@@ -44,6 +48,7 @@ func (s *PersonServiceImpl) CreatePerson(ctx context.Context, req *entity.Create
 func (s *PersonServiceImpl) GetPersonByID(ctx context.Context, id uint) (*entity.PersonResponse, error) {
 	person, err := s.repo.GetByID(id)
 	if err != nil {
+		s.logger.Error("Failed to get person by ID", "id", id, "error", err)
 		return nil, err
 	}
 
@@ -53,6 +58,7 @@ func (s *PersonServiceImpl) GetPersonByID(ctx context.Context, id uint) (*entity
 func (s *PersonServiceImpl) GetAllPersons(ctx context.Context, filter entity.FilterOptions) ([]entity.PersonResponse, int64, error) {
 	people, total, err := s.repo.GetAll(filter)
 	if err != nil {
+		s.logger.Error("Failed to get all persons", "error", err)
 		return nil, 0, err
 	}
 
@@ -74,11 +80,13 @@ func (s *PersonServiceImpl) UpdatePerson(ctx context.Context, id uint, req *enti
 	}
 
 	if err := s.repo.Update(id, person); err != nil {
+		s.logger.Error("Failed to update person", "id", id, "error", err)
 		return nil, err
 	}
 
 	updatedPerson, err := s.repo.GetByID(id)
 	if err != nil {
+		s.logger.Error("Failed to get updated person", "id", id, "error", err)
 		return nil, err
 	}
 
@@ -88,6 +96,7 @@ func (s *PersonServiceImpl) UpdatePerson(ctx context.Context, id uint, req *enti
 func (s *PersonServiceImpl) DeletePerson(ctx context.Context, id uint) error {
 
 	if err := s.repo.Delete(id); err != nil {
+		s.logger.Error("Failed to delete person", "id", id, "error", err)
 		return err
 	}
 

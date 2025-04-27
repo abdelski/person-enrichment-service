@@ -6,28 +6,27 @@ import (
 	"gorm.io/gorm"
 )
 
-
 type Person struct {
 	gorm.Model
-	Name 		string `gorm:"not null"`
-	Surname 	string `gorm:"not null"`
-	Age 		int
-	Gender 		string
+	Name        string `gorm:"not null"`
+	Surname     string `gorm:"not null"`
+	Age         int
+	Gender      string
 	Nationality string
-	CreatedAt 	time.Time
-	UpdatedAt 	time.Time
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type CreatePersonRequest struct {
-	Name 	string `json:"name" binding:"required"`
+	Name    string `json:"name" binding:"required"`
 	Surname string `json:"surname" binding:"required"`
 }
 
 type UpdatePersonRequest struct {
-	Name       	string `json:"name,omitempty"`
-	Surname    	string `json:"surname,omitempty"`
-	Age        	int    `json:"age,omitempty"`
-	Gender     	string `json:"gender,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Surname     string `json:"surname,omitempty"`
+	Age         int    `json:"age,omitempty"`
+	Gender      string `json:"gender,omitempty"`
 	Nationality string `json:"nationality,omitempty"`
 }
 
