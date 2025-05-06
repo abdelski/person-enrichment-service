@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=person_db
+      - POSTGRES_USER=person_user
+      - POSTGRES_PASSWORD=person_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U person_user -d person_db -t 30"]
+      interval: 10s
+      timeout: 30s
+      retries: 15
+      start_period: 40s
+  migrate:
+    image: migrate/migrate
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/migrations
+    command: 
+      - "-path=/migrations"
+      - "-database=postgres://person_user:person_password@db:5432/person_db?sslmode=disable"
+      - "up"
+  app:
+    build: .
+    ports:
+      - "8081:8080"
+    environment:
+      - SERVER_PORT=8080
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=person_db
+      - DB_USER=person_user
+      - DB_PASSWORD=person_password
+      - DB_SSLMODE=disable
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+    restart: unless-stopped
+
+
+volumes:
+  postgres_data:
